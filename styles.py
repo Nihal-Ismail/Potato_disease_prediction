@@ -20,49 +20,57 @@ def apply_styles(st):
 
             /* Main container styling */
             .block-container {{
-                padding-top: 1rem !important;
-                padding-bottom: 1rem !important;
-                max-width: 800px;
+                padding-top: 0.3rem !important;
+                padding-bottom: 0.3rem !important;
+                max-width: 650px;
                 margin: auto;
                 background: rgba(0,0,0,0.8);
-                border-radius: 15px;
-                padding: 2rem;
+                border-radius: 12px;
+                padding: 1rem;
+                max-height: 90vh;
+                overflow-y: auto;
             }}
 
             /* Centered heading */
             .main-title {{
                 text-align: center;
-                font-size: 2rem;
+                font-size: 1.5rem;
                 font-weight: 700;
-                color: #FFC107;  /* Changed to warm yellow */
-                text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
-                margin-bottom: 1rem;
+                color: #FFC107;  
+                text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+                margin-bottom: 0.5rem;
             }}
 
             hr {{
                 border: 1px solid rgba(255,255,255,0.2);
-                margin: 1rem 0;
+                margin: 0.5rem 0;
             }}
 
             /* Image preview styling */
             .image-preview {{
                 display: block;
-                margin: 1rem auto;
-                max-width: 250px;
-                border-radius: 10px;
+                margin: 0.5rem auto 0.3rem auto;
+                max-width: 140px;  /* smaller image */
+                border-radius: 8px;
                 border: 2px solid #FFD93D;
-                box-shadow: 0px 4px 15px rgba(0,0,0,0.5);
+                box-shadow: 0px 2px 10px rgba(0,0,0,0.5);
+            }}
+
+            /* Prediction container */
+            .prediction-container {{
+                text-align: center;
+                margin-top: 0.4rem;
             }}
 
             /* Prediction badge styling */
             .prediction-badge {{
                 display: inline-block;
-                padding: 10px 20px;
-                border-radius: 20px;
+                padding: 6px 12px;
+                border-radius: 15px;
                 font-weight: bold;
-                font-size: 1.1rem;
+                font-size: 0.9rem;
                 text-align: center;
-                margin-top: 1rem;
+                margin-top: 0.3rem;
             }}
             .early {{ background-color: #FF6B6B; color: white; }}
             .late {{ background-color: #6C63FF; color: white; }}
@@ -70,19 +78,19 @@ def apply_styles(st):
 
             /* Confidence text */
             .confidence {{
-                font-size: 1rem;
-                margin-top: 0.5rem;
+                font-size: 0.85rem;
+                margin-top: 0.2rem;
                 text-align: center;
-                color: #8BC34A;  /* Changed to green-yellow */
+                color: #8BC34A;  
                 font-weight: bold;
             }}
 
             /* Footer note */
             .footer-note {{
                 text-align: center;
-                font-size: 0.8rem;
+                font-size: 0.7rem;
                 color: rgba(255,255,255,0.6);
-                margin-top: 1rem;
+                margin-top: 0.5rem;
             }}
         </style>
     """, unsafe_allow_html=True)
