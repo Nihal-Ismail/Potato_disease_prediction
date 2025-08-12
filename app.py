@@ -6,14 +6,7 @@ from PIL import Image
 import time
 import base64
 from io import BytesIO
-from styles import apply_styles  # keep your same styles file
-
-# ✅ Must be first Streamlit command
-st.set_page_config(
-    page_title="Potato Disease Classifier",
-    page_icon="🥔",
-    layout="centered"
-)
+from styles import apply_styles
 
 # --------- Class Labels, Styles & Icons ---------
 CLASS_NAMES = ["Early Blight", "Late Blight", "Healthy"]
@@ -28,50 +21,92 @@ CLASS_ICONS = {
     "Healthy": "🌱"
 }
 
-# --------- Apply Styles ---------
-apply_styles(st)
-
-# --------- Model Loading ---------
-@st.cache_resource
+# --------- Load TensorFlow SavedModel ---------
 def load_model():
-    model_path = "potato_disease_classification_model.h5"
-    return tf.keras.models.load_model(model_path)
+    model_path = os.path.join(os.path.dirname(__file__), "saved_models", "1")
+    loaded = tf.saved_model.load(model_path)
+    infer = loaded.signatures["serving_default"]
+    return infer
 
-model = load_model()
+# --------- Utilities ---------
+def image_to_base64(img_array):
+    img = Image.fromarray(img_array.astype('uint8'))
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    return base64.b64encode(buffered.getvalue()).decode()
 
-# --------- Image Preprocessing ---------
-def preprocess_image(image: Image.Image):
-    image = image.resize((256, 256))
-    img_array = tf.keras.utils.img_to_array(image)
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array = img_array / 255.0
-    return img_array
+def read_image(image_file):
+    try:
+        image = Image.open(image_file).convert("RGB")
+        return np.array(image)
+    except Exception as e:
+        st.error(f"Image loading failed: {str(e)}")
+        return None
 
-# --------- UI Title ---------
-st.markdown("<h1 style='text-align: center;'>🥔 Potato Disease Classifier</h1>", unsafe_allow_html=True)
-st.write("Upload a potato leaf image to identify if it has Early Blight, Late Blight, or is Healthy.")
+# --------- Main App ---------
+if __name__ == "__main__":
+    st.set_page_config(
+        page_title="Potato Disease Classifier",
+        page_icon="🥔",
+        layout="centered"
+    )
 
-# --------- File Upload ---------
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+    apply_styles(st)
 
-if uploaded_file is not None:
-    image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Uploaded Image", use_container_width=True)
+    MODEL = load_model()
 
-    if st.button("Predict"):
-        with st.spinner("Analyzing the leaf..."):
-            time.sleep(1)  # just to simulate loading
-            processed_image = preprocess_image(image)
-            predictions = model.predict(processed_image)
-            score = tf.nn.softmax(predictions[0])
-            predicted_class = CLASS_NAMES[np.argmax(score)]
-            confidence = 100 * np.max(score)
+    st.markdown('<div class="main-title">🥔 Potato Disease Classifier</div>', unsafe_allow_html=True)
+    st.markdown('<hr />', unsafe_allow_html=True)
 
-        css_class = CLASS_TO_CSS[predicted_class]
-        icon = CLASS_ICONS[predicted_class]
+    uploaded_file = st.file_uploader(
+        "Upload a potato leaf image",
+        type=["jpg", "jpeg", "png"],
+        label_visibility="collapsed"
+    )
 
-        st.markdown(
-            f"<h2 class='{css_class}'>Prediction: {predicted_class} {icon}</h2>",
-            unsafe_allow_html=True
-        )
-        st.write(f"Confidence: **{confidence:.2f}%**")
+    if uploaded_file:
+        image_np = read_image(uploaded_file)
+
+        if image_np is not None:
+            img_b64 = image_to_base64(image_np)
+            st.markdown(
+                f"<img src='data:image/png;base64,{img_b64}' class='image-preview'/>",
+                unsafe_allow_html=True
+            )
+
+            with st.spinner("Analyzing ..."):
+                time.sleep(1.2)
+
+                img_batch = np.expand_dims(image_np, 0)
+                img_batch = tf.convert_to_tensor(img_batch, dtype=tf.float32)
+
+                try:
+                    outputs = MODEL(img_batch)
+                    predictions = list(outputs.values())[0].numpy()
+
+                    class_idx = int(np.argmax(predictions[0]))
+                    predicted_class = CLASS_NAMES[class_idx]
+                    confidence = float(np.max(predictions[0])) * 100
+
+                    css_class = CLASS_TO_CSS.get(predicted_class, "healthy")
+                    icon = CLASS_ICONS.get(predicted_class, "🌱")
+
+                    # Wrap output in centered container below image
+                    st.markdown(
+                        f"""
+                        <div class='prediction-container'>
+                            <div class='prediction-badge {css_class}'>{icon} {predicted_class}</div>
+                            <div class='confidence'>Confidence: {confidence:.2f}%</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                    st.progress(confidence / 100)
+
+                except Exception as e:
+                    st.error(f"Prediction failed: {str(e)}")
+    else:
+        st.info("Please upload an image.")
+
+    st.markdown('<div class="footer-note">Potato Disease Classifier © 2025</div>', unsafe_allow_html=True)
