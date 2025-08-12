@@ -22,6 +22,7 @@ CLASS_ICONS = {
 }
 
 # --------- Load TensorFlow SavedModel ---------
+@st.cache_resource
 def load_model():
     model_path = os.path.join(os.path.dirname(__file__), "saved_models", "1")
     loaded = tf.saved_model.load(model_path)
