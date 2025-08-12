@@ -1,13 +1,16 @@
-def apply_styles(st):
-    import base64
+import base64
+import streamlit as st
 
-    # Read and encode the local background image
+@st.cache_data
+def get_bg_base64():
     with open("11.jpg", "rb") as bg_file:
-        bg_base64 = base64.b64encode(bg_file.read()).decode()
+        return base64.b64encode(bg_file.read()).decode()
+
+def apply_styles(st):
+    bg_base64 = get_bg_base64()
 
     st.markdown(f"""
         <style>
-            /* Import Google Font */
             @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
 
             html, body, [class*="stApp"] {{
@@ -18,7 +21,6 @@ def apply_styles(st):
                 color: white;
             }}
 
-            /* Main container styling */
             .block-container {{
                 padding-top: 0.3rem !important;
                 padding-bottom: 0.3rem !important;
@@ -31,7 +33,6 @@ def apply_styles(st):
                 overflow-y: auto;
             }}
 
-            /* Centered heading */
             .main-title {{
                 text-align: center;
                 font-size: 1.5rem;
@@ -46,23 +47,20 @@ def apply_styles(st):
                 margin: 0.5rem 0;
             }}
 
-            /* Image preview styling */
             .image-preview {{
                 display: block;
                 margin: 0.5rem auto 0.3rem auto;
-                max-width: 140px;  /* smaller image */
+                max-width: 140px;
                 border-radius: 8px;
                 border: 2px solid #FFD93D;
                 box-shadow: 0px 2px 10px rgba(0,0,0,0.5);
             }}
 
-            /* Prediction container */
             .prediction-container {{
                 text-align: center;
                 margin-top: 0.4rem;
             }}
 
-            /* Prediction badge styling */
             .prediction-badge {{
                 display: inline-block;
                 padding: 6px 12px;
@@ -76,7 +74,6 @@ def apply_styles(st):
             .late {{ background-color: #6C63FF; color: white; }}
             .healthy {{ background-color: #4CAF50; color: white; }}
 
-            /* Confidence text */
             .confidence {{
                 font-size: 0.85rem;
                 margin-top: 0.2rem;
@@ -85,7 +82,6 @@ def apply_styles(st):
                 font-weight: bold;
             }}
 
-            /* Footer note */
             .footer-note {{
                 text-align: center;
                 font-size: 0.7rem;
